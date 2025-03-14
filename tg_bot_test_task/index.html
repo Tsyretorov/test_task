@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tsyretorov Roman</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
+<template>
+  <div>
+    <div v-if="step === 1">
+      <h1>Выберите дату</h1>
+      <input type="date" v-model="selectedDate" />
+      <button @click="fetchUserData">Далее</button>
+    </div>
+
+    <div v-if="step === 2">
+      <h1>Ваши данные</h1>
+      <p>Дата: {{ selectedDate }}</p>
+      <p>Имя: {{ user.first_name }}</p>
+      <p>Фамилия: {{ user.last_name }}</p>
+      <p>Username: {{ user.username }}</p>
+      <button @click="step = 3">Поделиться</button>
+    </div>
+
+    <div v-if="step === 3">
+      <button @click="generateLink">Поделиться</button>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      user: {
+        firstName: '',
+        lastName: '',
+        username: ''
+      }
+    };
+  },
+  mounted() {
+    const tg = window.Telegram.WebApp;
+    if (tg.initDataUnsafe.user) {
+      this.user.firstName = tg.initDataUnsafe.user.first_name || 'Не указано';
+      this.user.lastName = tg.initDataUnsafe.user.last_name || 'Не указано';
+      this.user.username = tg.initDataUnsafe.user.username || 'Не указано';
+    }
+  },
+  methods: {
+    generateLink() {
+      const baseUrl = 'https://tsyretorov.github.io/';
+      const queryParams = new URLSearchParams({
+        firstName: this.user.firstName,
+        lastName: this.user.lastName,
+        username: this.user.username
+      }).toString();
+
+      const shareLink = `${baseUrl}?${queryParams}`;
+
+      navigator.clipboard.writeText(shareLink).then(() => {
+        alert('Ссылка скопирована в буфер обмена!');
+      });
+    }
+  }
+};
+</script>
